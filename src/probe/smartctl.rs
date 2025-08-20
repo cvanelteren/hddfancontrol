@@ -69,7 +69,7 @@ impl DeviceTempProber for SctProber {
             .lines()
             .map_while(Result::ok)
             .find_map(|line| {
-                if line.contains("Current Temperature") {
+                if line.contains("Temperature") {
                     // Extract the numeric value using colon splitting
                     line.split(':')
                         .nth(1) // Get the part after the colon
