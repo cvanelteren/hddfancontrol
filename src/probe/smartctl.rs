@@ -47,7 +47,7 @@ pub(crate) struct SctProber {
 
 impl DeviceTempProber for SctProber {
     fn probe_temp(&mut self) -> anyhow::Result<Temp> {
-        let output = Command::new("sudo smartctl")
+        let output = Command::new("smartctl")
             .args([
                 "-a",
                 self.device
