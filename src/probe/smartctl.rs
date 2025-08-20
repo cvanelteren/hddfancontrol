@@ -58,6 +58,10 @@ impl DeviceTempProber for SctProber {
             .stderr(Stdio::null())
             .env("LANG", "C")
             .output()?;
+        println!(
+            "smartctl output: {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
         anyhow::ensure!(
             output.status.success(),
             "smartctl failed with code {}",
