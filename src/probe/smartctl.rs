@@ -69,14 +69,14 @@ impl DeviceTempProber for SctProber {
             .lines()
             .map_while(Result::ok)
             .find_map(|l| {
-                l.strip_prefix("Current Temperature: ")
-                    .map(ToOwned::to_owned)
-            })
-            .and_then(|l| {
                 l.split_ascii_whitespace()
-                    .rev()
-                    .nth(1)
-                    .map(ToOwned::to_owned)
+                    .find(|word| word.ends_with("Celsius") || word.ends_with("Fahrenheit"))
+                    .and_then(|temp_str| {
+                        temp_str
+                            .split_once('C')
+                            .or_else(|| temp_str.split_once('F'))
+                    })
+                    .map(|(value, _)| value.to_owned())
             })
             .ok_or_else(|| anyhow::anyhow!("Failed to parse smartctl SCT temp output"))?
             .parse()?;
