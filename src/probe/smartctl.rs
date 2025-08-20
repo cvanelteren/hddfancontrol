@@ -71,7 +71,7 @@ impl DeviceTempProber for SctProber {
         let temp = lines
             .iter()
             .find_map(|line| {
-                if line.contains("Temperature") {
+                if line.starts_with("Current Temperature") || line.starts_with("Temperature") {
                     line.split(':')
                         .nth(1) // Get the part after the colon
                         .and_then(|part| part.trim().split_whitespace().next()) // Get the first word
