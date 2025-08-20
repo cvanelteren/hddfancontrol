@@ -63,13 +63,11 @@ impl DeviceTempProber for SctProber {
             "smartctl failed with code {}",
             output.status
         );
-        let temp = output
-            .stdout
-            .lines()
-            .map_while(Result::ok)
+        let lines = output.stdout.lines().collect::<Result<Vec<_>, _>>()?;
+        let temp = lines
+            .iter()
             .find_map(|line| {
                 if line.contains("Temperature") {
-                    // Extract the numeric value using colon splitting
                     line.split(':')
                         .nth(1) // Get the part after the colon
                         .and_then(|part| part.trim().split_whitespace().next()) // Get the first word
@@ -78,7 +76,19 @@ impl DeviceTempProber for SctProber {
                     None
                 }
             })
-            .ok_or_else(|| anyhow::anyhow!("Failed to parse smartctl SCT temp output"))?;
+            .or_else(|| {
+                lines
+                    .iter()
+                    .find_map(|l| l.parse::<SmartAttribLog>().ok().and_then(|a| a.temp()))
+            })
+            .or_else(|| {
+                lines
+                    .iter()
+                    .find_map(|l| l.parse::<SmartAttribLog>().ok().and_then(|a| a.temp()))
+            })
+            .ok_or_else(|| {
+                anyhow::anyhow!("Failed to parse smartctl attribute output, or no temp attribute")
+            })?;
         Ok(temp)
     }
 }
