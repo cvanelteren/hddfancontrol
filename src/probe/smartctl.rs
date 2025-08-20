@@ -68,18 +68,18 @@ impl DeviceTempProber for SctProber {
             .stdout
             .lines()
             .map_while(Result::ok)
-            .find_map(|l| {
-                l.split_ascii_whitespace()
-                    .find(|word| word.ends_with("Celsius") || word.ends_with("Fahrenheit"))
-                    .and_then(|temp_str| {
-                        temp_str
-                            .split_once('C')
-                            .or_else(|| temp_str.split_once('F'))
-                    })
-                    .map(|(value, _)| value.to_owned())
+            .find_map(|line| {
+                if line.contains("Current Temperature") {
+                    // Extract the numeric value using colon splitting
+                    line.split(':')
+                        .nth(1) // Get the part after the colon
+                        .and_then(|part| part.trim().split_whitespace().next()) // Get the first word
+                        .and_then(|value| value.parse::<f64>().ok()) // Parse as f64
+                } else {
+                    None
+                }
             })
-            .ok_or_else(|| anyhow::anyhow!("Failed to parse smartctl SCT temp output"))?
-            .parse()?;
+            .ok_or_else(|| anyhow::anyhow!("Failed to parse smartctl SCT temp output"))?;
         Ok(temp)
     }
 }

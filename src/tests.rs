@@ -2,6 +2,37 @@
 
 #![allow(clippy::unwrap_used)]
 
+#[cfg(test)]
+mod binary_mock_tests {
+    use super::BinaryMock;
+
+    #[test]
+    fn test_temperature_output() {
+        let stdout_data = b"Temperature: 30 Celsius\n";
+        let stderr_data = b"";
+        let rc = 0;
+
+        let _mock = BinaryMock::new("mock_temp", stdout_data, stderr_data, rc).unwrap();
+
+        // Execute the mock binary
+        let output = std::process::Command::new("mock_temp")
+            .output()
+            .expect("Failed to execute mock binary");
+
+        // Verify stdout
+        assert_eq!(
+            String::from_utf8_lossy(&output.stdout),
+            "Temperature: 30 Celsius\n"
+        );
+
+        // Verify stderr is empty
+        assert!(output.stderr.is_empty());
+
+        // Verify return code
+        assert_eq!(output.status.code(), Some(rc as i32));
+    }
+}
+
 use std::{env, fs::OpenOptions, io::Write as _, os::unix::prelude::OpenOptionsExt as _};
 
 /// A mocked binary added in PATH env var
