@@ -49,8 +49,7 @@ impl DeviceTempProber for SctProber {
     fn probe_temp(&mut self) -> anyhow::Result<Temp> {
         let output = Command::new("smartctl")
             .args([
-                "-l",
-                "scttempsts",
+                "-a",
                 self.device
                     .to_str()
                     .ok_or_else(|| anyhow::anyhow!("Invalid device path"))?,
